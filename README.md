@@ -1,3 +1,7 @@
+forks from [epub-packag](https://github.com/eGust/epub-package.dart)
+
+the author did not response about two years, many libs are old and conflict against others. so I forked to upgrade it. 
+
 # epub_package
 
 Yet another EPub package for Flutter.

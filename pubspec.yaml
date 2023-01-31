@@ -1,8 +1,8 @@
-name: epub_package
+name: epub_dart
 description: A new Flutter package project.
 version: 0.0.3-beta4
-author: eGust<egustc@gmail.com>
-homepage: https://github.com/eGust/epub-package.dart
+author: Warren<hongyu.hg@gmail.com>
+homepage: https://github.com/hongyu-hg/epub_dart.dart
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
