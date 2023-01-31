@@ -98,7 +98,7 @@ class XmlTag {
 }
 
 class _EpubXmlBase {
-  xml.XmlElement _getXmlRoot(String xmlStr) => xml.parse(xmlStr).rootElement;
+  xml.XmlElement _getXmlRoot(String xmlStr) => xml.XmlDocument.parse(xmlStr).rootElement;
   dom.Document _getHtmlRoot(String xmlStr) => html.parse(xmlStr);
 
   Iterable<xml.XmlElement> _childElements(xml.XmlElement parent) =>

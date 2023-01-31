@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:test/test.dart';
 
-import 'package:epub_package/epub_package.dart';
+import 'package:epub_dart/epub_package.dart';
 
 import 'package:html/parser.dart' as html;
 import 'package:xml/xml.dart' as xml;
