@@ -4,9 +4,9 @@ class ZipPackage {
   ZipPackage._(this.file);
   final File file;
 
-  Map<String, ZipLocalFile> entries;
-  List<ZipCentralDirectory> centralDirectories;
-  ZipEndCentralDirectory cdEnd;
+  Map<String?, ZipLocalFile>? entries;
+  List<ZipCentralDirectory>? centralDirectories;
+  ZipEndCentralDirectory? cdEnd;
 
   Map<String, dynamic> toJson() => {
         'file': file.path,
@@ -16,9 +16,9 @@ class ZipPackage {
         'stopOffset': stopOffset,
       };
 
-  int stopOffset;
+  int? stopOffset;
 
-  static Future<ZipPackage> from(File file) async {
+  static Future<ZipPackage?> from(File file) async {
     if (!(await file.exists())) return null;
 
     final zp = ZipPackage._(file);
@@ -66,17 +66,17 @@ class ZipPackage {
         }
 
         if (header.isCentralDirectoryEnd) {
-          zp.cdEnd = header;
+          zp.cdEnd = header as ZipEndCentralDirectory?;
           zp.stopOffset = package.position;
           break;
         }
 
         if (header.isLocalFile) {
-          final ZipLocalFile f = header;
+          final ZipLocalFile f = header as ZipLocalFile;
           entries.add(f);
-          package.addToPosition(f.compressedSize);
+          package.addToPosition(f.compressedSize!);
         } else if (header.isCentralDirectory) {
-          final ZipCentralDirectory cd = header;
+          final ZipCentralDirectory cd = header as ZipCentralDirectory;
           cds.add(cd);
         }
       }
@@ -93,9 +93,9 @@ class ZipPackage {
 
   static Stream<List<int>> extract(
     File file, {
-    final int start,
-    final int end,
-    final int compressionMethod,
+    final int? start,
+    final int? end,
+    final int? compressionMethod,
   }) {
     final stream = file.openRead(start, end).cast<List<int>>();
     if (compressionMethod == 0) return stream;
@@ -104,20 +104,20 @@ class ZipPackage {
     throw UnsupportedError('Unsupported compress method: ${compressionMethod}');
   }
 
-  static Stream<List<int>> raw(File file, {final int start, final int end}) =>
+  static Stream<List<int>> raw(File file, {final int? start, final int? end}) =>
       file.openRead(start, end).cast<List<int>>();
 
-  Stream<List<int>> extractStream(String filename) {
-    final zip = entries[filename];
+  Stream<List<int>>? extractStream(String filename) {
+    final zip = entries![filename];
     return zip == null
         ? null
         : extract(file,
             start: zip.offsetEnd,
-            end: zip.offsetEnd + zip.compressedSize,
+            end: zip.offsetEnd! + zip.compressedSize!,
             compressionMethod: zip.compressionMethod);
   }
 
-  Future<String> extractAsUtf8(String filename) {
+  Future<String>? extractAsUtf8(String filename) {
     final stream = extractStream(filename);
     if (stream == null) return null;
 

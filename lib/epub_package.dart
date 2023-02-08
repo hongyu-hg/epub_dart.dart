@@ -9,6 +9,7 @@ import 'package:html/parser.dart' as html;
 import 'package:mime/mime.dart' as mime;
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart' as xml;
+import 'package:collection/collection.dart' show IterableExtension;
 
 part 'epub/epub_asset.dart';
 part 'epub/epub_meta.dart';

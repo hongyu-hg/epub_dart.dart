@@ -5,8 +5,7 @@ final _pathRegEx = RegExp(r'[^\\/]');
 class _Convert<T> {
   const _Convert();
 
-  Map<String, T> map(Map<String, dynamic> json) =>
-      json.map((k, v) => MapEntry<String, T>(k, v));
+  Map<String, T> map(Map<String, dynamic> json) => json.map((k, v) => MapEntry<String, T>(k, v));
 
   Iterable<T> list(List json) => json.map((v) => v as T);
 }
@@ -14,30 +13,28 @@ class _Convert<T> {
 const _as = _Convert<String>();
 
 /// Joins file paths
-String pathJoin(List<String> paths) {
+String pathJoin(List<String?> paths) {
   final parts = paths.where((s) => s != null && s.isNotEmpty).toList();
   final lastIndex = parts.length - 1;
   for (var i = 0; i <= lastIndex; i += 1) {
-    final part = parts[i];
+    final part = parts[i]!;
     parts[i] = part.substring(
       i == 0 ? 0 : part.indexOf(_pathRegEx),
       i == lastIndex ? part.length : part.lastIndexOf(_pathRegEx) + 1,
     );
   }
 
-  return p
-      .normalize(parts.where((s) => s.isNotEmpty).join('/'))
-      .replaceAll('\\', '/');
+  return p.normalize(parts.where((s) => s!.isNotEmpty).join('/')).replaceAll('\\', '/');
 }
 
 /// Represents a file in Zip package
 class EpubFile {
   EpubFile(this.filename, this._offsetStart, this._offsetEnd, this._method);
 
-  final String filename;
-  final int _offsetStart;
-  final int _offsetEnd;
-  final int _method;
+  final String? filename;
+  final int? _offsetStart;
+  final int? _offsetEnd;
+  final int? _method;
 
   bool get isCompressed => _method != 0;
 
@@ -76,10 +73,10 @@ class XmlTag {
   XmlTag(this.name, this.text);
 
   /// Tag's name
-  final String name;
+  final String? name;
 
   /// Inner text
-  final String text;
+  final String? text;
 
   /// Attributes
   final attrs = <String, String>{};
@@ -99,28 +96,28 @@ class XmlTag {
 
 class _EpubXmlBase {
   xml.XmlElement _getXmlRoot(String xmlStr) => xml.XmlDocument.parse(xmlStr).rootElement;
+
   dom.Document _getHtmlRoot(String xmlStr) => html.parse(xmlStr);
 
-  Iterable<xml.XmlElement> _childElements(xml.XmlElement parent) =>
-      parent.children
-          .map((node) => node is xml.XmlElement ? node : null)
-          .where((n) => n != null);
+  Iterable<xml.XmlElement> _childElements(xml.XmlElement parent) {
+    // var r = parent.children.map((node) => node is xml.XmlElement ? node : null).where((n) => n != null) ;
+    return parent.children.where((node) => node is xml.XmlElement).map((e) => e as xml.XmlElement);
+  }
 }
 
 /// Internal record to represents an asset in EPub
 class EpubAsset {
-  EpubAsset._(this.id, this.href, this.mediaType, String basePath)
-      : filename = pathJoin([basePath, href]);
+  EpubAsset._(this.id, this.href, this.mediaType, String? basePath) : filename = pathJoin([basePath, href]);
 
-  final String id;
-  final String href;
-  final String mediaType;
-  final String filename;
+  final String? id;
+  final String? href;
+  final String? mediaType;
+  final String? filename;
 
   final optional = <String, String>{};
 
   /// Helper method to populate relative item's path
-  String relativePath(String path) => pathJoin([p.dirname(filename), path]);
+  String relativePath(String path) => pathJoin([p.dirname(filename!), path]);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -141,12 +138,12 @@ class EpubAsset {
 
 /// External record to represents an asset in EPub
 class EpubDocument {
-  EpubDocument._({this.package, this.id, this.filename, this.asset})
+  EpubDocument._({required this.package, this.id, required this.filename, this.asset})
       : dirname = p.dirname(filename),
-        file = package.files[asset.filename];
+        file = package.files[asset!.filename];
 
   /// Asset ID
-  final String id;
+  final String? id;
 
   /// Path of the asset in EPub
   final String dirname;
@@ -158,23 +155,23 @@ class EpubDocument {
   final EpubPackage package;
 
   /// [EpubAsset] reference
-  final EpubAsset asset;
+  final EpubAsset? asset;
 
   /// [EpubFile] reference
-  final EpubFile file;
+  final EpubFile? file;
 
   /// Returns if file is compressed
-  bool get isCompressed => file.isCompressed;
+  bool get isCompressed => file!.isCompressed;
 
   /// Asset content type
   /// It prefers `asset.mediaType`
   /// If no [asset] assigned it will lookup by [filename]
   /// When [detectHeader] is set it will detect header
-  Future<String> mimeType({bool detectHeader = false}) async {
-    if (asset != null) return asset.mediaType;
+  Future<String?> mimeType({bool detectHeader = false}) async {
+    if (asset != null) return asset!.mediaType;
 
     if (detectHeader) {
-      final bytes = await readAsBytes();
+      final bytes = (await readAsBytes())!;
       return mime.lookupMimeType(filename, headerBytes: bytes);
     }
 
@@ -182,35 +179,32 @@ class EpubDocument {
   }
 
   /// Helper method to create instance from [package] and its [asset]
-  static EpubDocument fromAsset(EpubAsset asset, EpubPackage package) =>
-      asset == null
-          ? null
-          : EpubDocument._(
-              package: package,
-              id: asset.id,
-              filename: asset.filename,
-              asset: asset,
-            );
+  static EpubDocument? fromAsset(EpubAsset? asset, EpubPackage package) => asset == null
+      ? null
+      : EpubDocument._(
+          package: package,
+          id: asset.id,
+          filename: asset.filename!,
+          asset: asset,
+        );
 
   /// Reads content as `Stream`
-  Future<Stream<List<int>>> readStream() => package.fileStream(file);
+  Future<Stream<List<int>>?> readStream() => package.fileStream(file);
 
   /// Reads content as `Stream`
-  Future<Stream<List<int>>> rawStream() => package.fileRawStream(file);
+  Future<Stream<List<int>>?> rawStream() => package.fileRawStream(file);
 
   /// Reads content as `List<int>`
-  Future<List<int>> readAsBytes() => package.fileBytes(file);
+  Future<List<int>?>? readAsBytes() => package.fileBytes(file);
 
   /// Reads content as `List<int>`
-  Future<List<int>> rawAsBytes() => package.fileRawBytes(file);
+  Future<List<int>?>? rawAsBytes() => package.fileRawBytes(file);
 
   /// Reads content as UTF-8 String
-  Future<String> readText({Converter<List<int>, String> decoder}) =>
-      package.readFileText(file, decoder: decoder);
+  Future<String?> readText({Converter<List<int>, String>? decoder}) => package.readFileText(file, decoder: decoder);
 
   /// Returns relative [EpubDocument] to current document
-  EpubDocument getRelativeDoc(String relativePath) =>
-      package.getDocumentByPath(pathJoin([dirname, relativePath]));
+  EpubDocument? getRelativeDoc(String relativePath) => package.getDocumentByPath(pathJoin([dirname, relativePath]));
 
   Map<String, dynamic> toJson() => {
         'id': id,

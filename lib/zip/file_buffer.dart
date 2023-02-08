@@ -10,14 +10,14 @@ class FileBuffer {
       file.open(),
       file.length(),
     ]);
-    return FileBuffer._(args[0], args[1]);
+    return FileBuffer._(args[0] as RandomAccessFile, args[1] as int);
   }
 
   static const _BLOCK_SHIFT = 14; // 16KB
   static const _BLOCK_SIZE = 1 << _BLOCK_SHIFT;
   static const _BLOCK_MASK = _BLOCK_SIZE - 1;
 
-  List<int> _buffer = List<int>(_BLOCK_SIZE);
+  List<int> _buffer = List<int>.filled(_BLOCK_SIZE, 0);
   int _blockIndex = -1;
 
   final RandomAccessFile _file;
@@ -45,6 +45,7 @@ class FileBuffer {
 
   /// Current [position]
   int get position => _position;
+
   set position(int value) {
     _setPosition(value < 0 ? length + value : value);
   }
@@ -61,7 +62,7 @@ class FileBuffer {
   }
 
   Future<List<int>> _read(final int count) async {
-    final result = List<int>(count);
+    final result = List<int>.filled(count, 0);
     if (count == 0) return result;
 
     var start = 0;
@@ -90,7 +91,7 @@ class FileBuffer {
       }
 
       final stopOffset = lastBlockPos - _position;
-      await _file.readInto(result, start, stopOffset);
+      await _file.readInto(result as List<int>, start, stopOffset);
       start = stopOffset;
       blkOffsetStart = 0;
     } else {
@@ -100,7 +101,7 @@ class FileBuffer {
     }
 
     // read to buffer
-    await _file.readInto(_buffer, 0, _BLOCK_SIZE);
+    await _file.readInto(_buffer as List<int>, 0, _BLOCK_SIZE);
     _blockIndex = blkIndexEnd;
     _fileBlockIndex = blkIndexEnd + 1;
 
@@ -110,11 +111,10 @@ class FileBuffer {
   }
 
   /// Reads [count] bytes from current [position].
-  Future<List<int>> read([final int count = 1]) =>
-      _read(_normalizeCount(count));
+  Future<List<int>> read([final int count = 1]) => _read(_normalizeCount(count));
 
   /// Reads 1 byte as unsigned int8 from current [position].
-  Future<int> readByte() async {
+  Future<int?> readByte() async {
     final buff = await read();
     return buff[0];
   }
@@ -122,21 +122,21 @@ class FileBuffer {
   /// Reads 2 bytes as unsigned int16 from current [position].
   Future<int> readUint16() async {
     final buff = await read(2);
-    final b0 = buff[0] & 0xff;
-    final b1 = buff[1] & 0xff;
+    final b0 = buff[0]! & 0xff;
+    final b1 = buff[1]! & 0xff;
     return (b1 << 8) | b0;
   }
 
   /// Reads 4 bytes as unsigned int32 from current [position].
   Future<int> readUint32() async {
     final buff = await read(4);
-    final b0 = buff[0] & 0xff;
-    final b1 = buff[1] & 0xff;
-    final b2 = buff[2] & 0xff;
-    final b3 = buff[3] & 0xff;
+    final b0 = buff[0]! & 0xff;
+    final b1 = buff[1]! & 0xff;
+    final b2 = buff[2]! & 0xff;
+    final b3 = buff[3]! & 0xff;
     return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
   }
 
   /// Reads [count] bytes as UTF-8 string from current [position].
-  Future<String> readUtf8(int count) async => utf8.decode(await read(count));
+  Future<String> readUtf8(int count) async => utf8.decode(await (read(count) as FutureOr<List<int>>));
 }

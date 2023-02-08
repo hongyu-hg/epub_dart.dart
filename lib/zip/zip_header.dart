@@ -10,12 +10,12 @@ abstract class ZipHeader {
 
   Future<void> _read(FileBuffer src);
 
-  int offsetStart, offsetEnd;
+  int? offsetStart, offsetEnd;
 
   @override
   String toString() => jsonEncode(this);
 
-  static Future<ZipHeader> readNext(FileBuffer src, int signature) async {
+  static Future<ZipHeader?> readNext(FileBuffer src, int signature) async {
     if (src.isEnd) return null;
 
     ZipHeader r;
@@ -43,19 +43,19 @@ abstract class ZipHeader {
 class ZipLocalFile extends ZipHeader {
   ZipLocalFile(int signature) : super(signature);
 
-  int versionToExtract; // 2 bytes
-  int generalFlag; // 2 bytes
-  int compressionMethod; // 2 bytes
-  int lastModTime; // 2 bytes
-  int lastModDate; // 2 bytes
-  int crc32; // 4 bytes
-  int compressedSize; // 4 bytes
-  int uncompressedSize; // 4 bytes
-  int filenameSize; // 2 bytes
-  int extraFieldSize; // 2 bytes
+  int? versionToExtract; // 2 bytes
+  late int generalFlag; // 2 bytes
+  int? compressionMethod; // 2 bytes
+  late int lastModTime; // 2 bytes
+  late int lastModDate; // 2 bytes
+  late int crc32; // 4 bytes
+  int? compressedSize; // 4 bytes
+  int? uncompressedSize; // 4 bytes
+  int? filenameSize; // 2 bytes
+  int? extraFieldSize; // 2 bytes
 
-  String filename;
-  List<int> extraField;
+  String? filename;
+  List<int?>? extraField;
 
   Future<void> _readLocalFileBase(FileBuffer src) async {
     versionToExtract = await src.readUint16();
@@ -71,8 +71,8 @@ class ZipLocalFile extends ZipHeader {
   }
 
   Future<void> _readLocalFileDynamic(FileBuffer src) async {
-    filename = await src.readUtf8(filenameSize);
-    extraField = await src.read(extraFieldSize);
+    filename = await src.readUtf8(filenameSize!);
+    extraField = await src.read(extraFieldSize!);
   }
 
   @override
@@ -86,7 +86,7 @@ class ZipLocalFile extends ZipHeader {
         'versionToExtract': versionToExtract,
         'generalFlag': generalFlag.toRadixString(16).padLeft(4, '0'),
         'compressionMethod':
-            compressionMethod.toRadixString(16).padLeft(4, '0'),
+            compressionMethod!.toRadixString(16).padLeft(4, '0'),
         'lastModTime': lastModTime.toRadixString(16).padLeft(4, '0'),
         'lastModDate': lastModDate.toRadixString(16).padLeft(4, '0'),
         'crc32': crc32.toRadixString(16).padLeft(8, '0'),
@@ -102,15 +102,15 @@ class ZipLocalFile extends ZipHeader {
 
 class ZipCentralDirectory extends ZipLocalFile {
   ZipCentralDirectory(int signature) : super(signature);
-  int versionMade; // 2 bytes
+  int? versionMade; // 2 bytes
 
-  int commentLength; // 2 bytes
-  int diskNumberStart; // 2 bytes
-  int internalAttributes; // 2 bytes
-  int externalAttributes; // 4 bytes
-  int relativeOffset; // 4 bytes
+  int? commentLength; // 2 bytes
+  int? diskNumberStart; // 2 bytes
+  late int internalAttributes; // 2 bytes
+  late int externalAttributes; // 4 bytes
+  int? relativeOffset; // 4 bytes
 
-  String comment;
+  String? comment;
 
   @override
   Future<void> _read(FileBuffer src) async {
@@ -123,7 +123,7 @@ class ZipCentralDirectory extends ZipLocalFile {
     relativeOffset = await src.readUint32();
 
     await _readLocalFileDynamic(src);
-    comment = await src.readUtf8(commentLength);
+    comment = await src.readUtf8(commentLength!);
   }
 
   Map<String, dynamic> toJson() => {
@@ -132,7 +132,7 @@ class ZipCentralDirectory extends ZipLocalFile {
         'versionToExtract': versionToExtract,
         'generalFlag': generalFlag.toRadixString(16).padLeft(4, '0'),
         'compressionMethod':
-            compressionMethod.toRadixString(16).padLeft(4, '0'),
+            compressionMethod!.toRadixString(16).padLeft(4, '0'),
         'lastModTime': lastModTime.toRadixString(16).padLeft(4, '0'),
         'lastModDate': lastModDate.toRadixString(16).padLeft(4, '0'),
         'crc32': crc32.toRadixString(16).padLeft(8, '0'),
@@ -157,15 +157,15 @@ class ZipCentralDirectory extends ZipLocalFile {
 class ZipEndCentralDirectory extends ZipHeader {
   ZipEndCentralDirectory(int signature) : super(signature);
 
-  int numberOfDisk; // 2 bytes
-  int numberOfDiskWithCentralDirectory; // 2 bytes
-  int totalEntriesOfDisk; // 2 bytes
-  int totalEntriesInCentralDirectory; // 2 bytes
-  int centralDirectorySize; // 4 bytes
-  int startOffset; // 4 bytes
-  int commentLength; // 2 bytes
+  int? numberOfDisk; // 2 bytes
+  int? numberOfDiskWithCentralDirectory; // 2 bytes
+  int? totalEntriesOfDisk; // 2 bytes
+  int? totalEntriesInCentralDirectory; // 2 bytes
+  int? centralDirectorySize; // 4 bytes
+  int? startOffset; // 4 bytes
+  int? commentLength; // 2 bytes
 
-  String comment;
+  String? comment;
 
   @override
   Future<void> _read(FileBuffer src) async {
@@ -177,7 +177,7 @@ class ZipEndCentralDirectory extends ZipHeader {
     startOffset = await src.readUint32();
     commentLength = await src.readUint16();
 
-    comment = await src.readUtf8(commentLength);
+    comment = await src.readUtf8(commentLength!);
   }
 
   Map<String, dynamic> toJson() => {

@@ -5,13 +5,14 @@ author: Warren<hongyu.hg@gmail.com>
 homepage: https://github.com/hongyu-hg/epub_dart.dart
 
 environment:
-  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   xml: ^6.2.2
   html: ^0.15.1
   path: ^1.8.2
   mime: ^1.0.4
+  collection: ^1.15.0-nullsafety.4
 
 dev_dependencies:
   test: ^1.22.2
