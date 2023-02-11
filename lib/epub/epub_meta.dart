@@ -8,6 +8,7 @@ class EpubItemRef {
     this.id,
     this.properties,
   });
+
   final String? idref;
   final bool? linear;
   final String? id;
@@ -37,6 +38,34 @@ class EpubMeta extends _EpubXmlBase {
   final items = <String?, EpubAsset>{};
   final itemByPath = <String?, EpubAsset>{};
 
+  String? get author {
+    return meta.firstWhereOrNull((element) => element.name == "dc:creator")?.text;
+  }
+
+  String? get description {
+    return meta.firstWhereOrNull((element) => element.name == "dc:description")?.text;
+  }
+
+  String? get publisher {
+    return meta.firstWhereOrNull((element) => element.name == "dc:publisher")?.text;
+  }
+
+  String? get language {
+    return meta.firstWhereOrNull((element) => element.name == "dc:language")?.text;
+  }
+
+  String? get date {
+    return meta.firstWhereOrNull((element) => element.name == "dc:date")?.text;
+  }
+
+  List<String?> get contributorList {
+    return meta.where((element) => element.name == "dc:contributor").map((e) => e.text).toList();
+  }
+
+  String? get identifier {
+    return meta.where((element) => element.name == "dc:identifier").map((e) => e.text).toList().toString();
+  }
+
   void _loadMetadata(xml.XmlElement root) {
     meta.addAll(_childElements(root).map((el) {
       final item = XmlTag(el.name.toString(), el.text);
@@ -45,6 +74,14 @@ class EpubMeta extends _EpubXmlBase {
       });
       return item;
     }));
+  }
+
+  /// Constructs from [xmlStr] and sets [filename]
+  EpubMeta.fromXml(String this.filename, String xmlStr) : basePath = p.dirname(filename) {
+    final root = _getXmlRoot(xmlStr);
+    _loadMetadata(root.findElements('metadata').first);
+    _loadManifest(root.findElements('manifest').first);
+    _loadSpine(root.findElements('spine').first);
   }
 
   static final _requiredItemAttrs = Set.from(['id', 'href', 'media-type']);
@@ -68,6 +105,7 @@ class EpubMeta extends _EpubXmlBase {
   }
 
   EpubAsset? getItemById(String? id) => items[id];
+
   EpubAsset? getItemByPath(String? path) => itemByPath[path];
 
   void _loadSpine(xml.XmlElement root) {
@@ -81,15 +119,6 @@ class EpubMeta extends _EpubXmlBase {
     );
   }
 
-  /// Constructs from [xmlStr] and sets [filename]
-  EpubMeta.fromXml(String this.filename, String xmlStr)
-      : basePath = p.dirname(filename) {
-    final root = _getXmlRoot(xmlStr);
-    _loadMetadata(root.findElements('metadata').first);
-    _loadManifest(root.findElements('manifest').first);
-    _loadSpine(root.findElements('spine').first);
-  }
-
   /// Creates [EpubMeta] and load meta data from [filename] in [package]
   static Future<EpubMeta?> load(EpubPackage package, String filename) async {
     final xmlStr = await package.readText(filename);
@@ -98,8 +127,7 @@ class EpubMeta extends _EpubXmlBase {
 
   /// Returns [EpubAsset] of cover image
   EpubAsset? getCoverImageAsset() {
-    final cover = meta.firstWhereOrNull(
-        (m) => m.name == 'meta' && m.attrs['name'] == 'cover');
+    final cover = meta.firstWhereOrNull((m) => m.name == 'meta' && m.attrs['name'] == 'cover');
     if (cover == null) return null;
 
     final coverId = cover.attrs['content'];

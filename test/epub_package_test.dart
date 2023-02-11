@@ -66,25 +66,25 @@ Future<void> testPackageSingle() async {
   final succ = await package.load();
   final stop = DateTime.now();
   print('loaded: $succ');
-  print("nav ${package.nav!.authors}");
-  print("nav ${package.metadata}");
+  print("metadata: ${package.metadata?.author}");
+  // print("nav ${package.metadata.getItemById(id)}");
   var first;
-  package.nav!.navMapList.forEach((element) {
-    element.children!.forEach((element) {
-      first ??= element.content;
-      print("${element.label}");
-    });
-  });
-  print(first);
-  var t = (await package.getDocumentByPath(first)!.readText())!;
-  var r = formatLineBreaks(t);
-  // var text = html.parse(t);
-  // // text.querySelectorAll(selector)
-  // print("${text.documentElement.outerHtml}");
+  // package.nav!.navMapList.forEach((element) {
+  //   element.children!.forEach((element) {
+  //     first ??= element.content;
+  //     print("${element.label}");
+  //   });
+  // });
+  // print(first);
+  // var t = (await package.getDocumentByPath(first)!.readText())!;
+  // var r = formatLineBreaks(t);
+  // // var text = html.parse(t);
+  // // // text.querySelectorAll(selector)
+  // // print("${text.documentElement.outerHtml}");
+  // // // print('$start - $stop');
+  // // // print(jsonEncode(package));
   // // print('$start - $stop');
-  // // print(jsonEncode(package));
-  // print('$start - $stop');
-  print(r);
+  // print(r);
 }
 
 String formatLineBreaks(String htmlStr) {
