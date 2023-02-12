@@ -188,11 +188,12 @@ class EpubNav extends _EpubXmlBase {
 
   int? get count => _count;
 
-  NavPoint get first => _navMapList.first;
+  NavPoint? get first => _navMapList.first;
 
   void linkPoints() {
+    if (_navMapList.isEmpty) return;
     NavPoint.linkSiblings(_navMapList);
-    NavPoint? point = first;
+    NavPoint? point = _navMapList.first;
     var index = 0;
     while (point != null) {
       point.index = index;

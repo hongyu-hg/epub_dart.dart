@@ -61,12 +61,14 @@ void testPackages() async {
 Future<void> testPackageSingle() async {
   print('started');
   final start = DateTime.now();
-  final f = File('test/epubs/A-Room-with-a-View-morrison.epub');
+  final f = File('test/epubs/goosebumps-2000-21-the-haunted-car_Goosebumps+2000+-+01+Cry+of+the+Cat.epub');
   final package = EpubPackage(f);
   final succ = await package.load();
   final stop = DateTime.now();
   print('loaded: $succ');
-  print("metadata: ${package.metadata?.author}");
+  print("metadata author: ${package.metadata?.author}");
+  print("metadata identifier: ${package.metadata?.identifier}");
+  print("metadata identifier: ${package.nav?.navMapList}");
   // print("nav ${package.metadata.getItemById(id)}");
   var first;
   // package.nav!.navMapList.forEach((element) {
